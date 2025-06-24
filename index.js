@@ -1,25 +1,18 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const { google } = require("googleapis");
+const twilio = require("twilio");
 
 const app = express();
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
+// ===========================
+// 🔥 GOOGLE SHEETS FUNCTION
+// ===========================
 async function getVisaInfo(country, visaType) {
   const auth = new google.auth.GoogleAuth({
-    credentials: {
-      "type": "service_account",
-      "project_id": "ancient-edition-463409-q7",
-      "private_key_id": "6791f93e8a8bfd201b2e936f3de7bdd6efe141bc",
-      "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCnK9Ikg6oTpMPy\nPRsz6/ljeu4doUnImeNhqLOgRywZv4Y+NeHRl9VwzQfW9W9jJdUKW2GBvsq0VxPn\ni6u35N6hkjup6bly0MiRMLd2e2lcZhRO4b9V5TmYHKDc+b1K4548wPuuB7CFZRaA\nwuvQxJjIZYxnns3qTGP+dWTc+Zo9B01pi6SreLyepT2eLkl3NltBwRuEBfSJepKS\nVpT+KL0SojuXB7uU5/JgVjvaW41eYLnowoRybjzWUrYgXEMvna4Ojc3G3Ovyso6r\nJKIcoiDChcrX1TvrCDYSUdkRPHVYJNE61xZ7PheKb1Lf3zbvP56wL51nvandmOsm\nlg5RZ+RxAgMBAAECggEAPr46PZ0zOPM23hTkQF0ZeaZ6d6GBFWr4xj8wx//eg/13\n76J+kpF3uUIi5qGwwFhDOQNqOe23m+8w18960Gb0zlSZ0yCXi4nkNWZA/ZW9SkI/\n7glZrG3/62EXWUjcrJ541hmifMODE9YIl6RRKMaZB2HhzER0ybMJNsit5ihCpROc\nEqQLzd9IbmoY+e5AwkkBcYeIH+Z1eMxiSDQ0H9cAW9A/W33kLd2iYbxKia5tGv7+\n06GOwejS7xiKm1ThioarkOCAAOV67LGPVOZdzMdKlG0zy0nQQpNOsKZFmDGodZMZ\nOejzWmvyGMTlltXr6PTY206Qs3lJ5lLGgxWVerL+xwKBgQDjiCU0qsnRSvwBOIFC\nk+MLAStpg0S3xi7rsMVtSzNMGKeiM6O44wLfFLzJqek0KzJ0cukmO2EeMRZCTlIC\nj1zBs6fSN5djLCzVejAbFAjm0I7P6DFCUAa2efmrqgIG6yTKJrEI95VmuiGSIKEJ\n+l9vAr2rnF46nquA6VLCTQ8dJwKBgQC8FlJEqptMPsMsNo73x/C9t/mwh+69lG0z\nJ0BA8TCAjaaTwAPvwXNsFroozPS55xBh9cuwPhn9g4lmDCFGedugIS1mjOtwGOtP\ntK/UjYSMSZvuvRBZNI7t4Rf8dke4X9F+CCbvSBqQmEemfdYg7+Sd2bGThbcP9U1v\n1wyZbkEgpwKBgQCkohIptZop8hO93mDJB7C0ebgrtGu4fZHdwB5aIpuPaBeDadIB\nKWEegSbI1ESFFux/DdZdb4GqEuKEP59fctQu5At+M/M6MvCN1seQEEMQn791+BAM\nZ1M0HbXl3DFzSBlqm+xlDJ/xoKRB05IyYhNDg7wxvAcCa2S09h6HsLJK6QKBgEp6\nUENOh0YuyBwW0o/9RS/qzN2BRiEdyAvsa/4LQ5hz/tUcwLJMmQbhDQAhAHsoqw0P\nRoPYY3RGhL666OY+VKBY4uBrxsLRq0QZmVKCY00lzLBBf1rDfCFn85aNw6KXlp3g\nXoJ7u8Er+5tK0uKh+5Yh4LY4yZ9xFCPINP4AcZubAoGBAJ1X1DRtebKjtrYasJjc\nMRJMomM8o6vsX2YRUrH5z244Z4mORzt/O4ofGpPe+3YRK4uZc+8m93gMWURfdkmq\n2EIHcW5/AzhtsCX8SjsBGPFWazG4pc5kGtwdKXCh9nZu9r5Cu/mkMjbRpCBVRGMf\nR2X3EKBF2K7nyNAdEH/nfzJo\n-----END PRIVATE KEY-----\n",
-      "client_email": "dialogflow-webhook@ancient-edition-463409-q7.iam.gserviceaccount.com",
-      "client_id": "117428644743054594350",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://oauth2.googleapis.com/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dialogflow-webhook%40ancient-edition-463409-q7.iam.gserviceaccount.com",
-      "universe_domain": "googleapis.com"
-    },
+    keyFile: "cred.json",
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   const sheets = google.sheets({ version: "v4", auth });
@@ -31,8 +24,8 @@ async function getVisaInfo(country, visaType) {
 
   for (let row of rows.slice(1)) {
     if (
-      row[0].toLowerCase() === country.toLowerCase() &&
-      row[1].toLowerCase() === visaType.toLowerCase()
+      row[0]?.toLowerCase() === country.toLowerCase() &&
+      row[1]?.toLowerCase() === visaType.toLowerCase()
     ) {
       return {
         cost: row[2],
@@ -43,6 +36,9 @@ async function getVisaInfo(country, visaType) {
   return null;
 }
 
+// ===========================
+// ⚡️ DIALOGFLOW WEBHOOK
+// ===========================
 app.post("/webhook", async (req, res) => {
   const intent = req.body.queryResult.intent.displayName;
   const country = req.body.queryResult.parameters.country_name;
@@ -54,15 +50,53 @@ app.post("/webhook", async (req, res) => {
   }
 
   if (intent === "Get Visa Cost") {
-    res.json({ fulfillmentText: `We charge ${result.cost} for a ${country} ${visaType} visa.` });
+    res.json({ fulfillmentText: `We charge ${result.cost} for ${country} ${visaType} visa.` });
   } else if (intent === "Get Visa Requirements") {
-    res.json({ fulfillmentText: `You need ${result.requirements} for a ${country} ${visaType} visa.` });
+    res.json({ fulfillmentText: `You need ${result.requirements} for ${country} ${visaType} visa.` });
   } else {
     res.json({ fulfillmentText: "I didn't understand the request." });
   }
 });
 
+// ===========================
+// 📱 WHATSAPP WEBHOOK
+// ===========================
+app.post("/whatsapp", async (req, res) => {
+  const twiml = new twilio.twiml.MessagingResponse();
+  const userMessage = req.body.Body;
+
+  // Very Simple Parser (you can make it smarter!)
+  // Expect user message like: "cost tourist Malaysia"
+  const words = userMessage.trim().split(/\s+/);
+  if (words.length < 3) {
+    twiml.message("Please ask like: cost tourist Malaysia OR requirements tourist Malaysia");
+    res.writeHead(200, { "Content-Type": "text/xml" });
+    return res.end(twiml.toString());
+  }
+
+  const [queryType, visaType, country] = words;
+
+  const result = await getVisaInfo(country, visaType);
+  if (!result) {
+    twiml.message("I couldn’t find that visa information.");
+  } else {
+    if (queryType.toLowerCase() === "cost") {
+      twiml.message(`We charge ${result.cost} for ${country} ${visaType} visa.`);
+    } else if (queryType.toLowerCase() === "requirements") {
+      twiml.message(`You need ${result.requirements} for ${country} ${visaType} visa.`);
+    } else {
+      twiml.message("I didn't understand your request. Try: cost tourist Malaysia");
+    }
+  }
+
+  res.writeHead(200, { "Content-Type": "text/xml" });
+  res.end(twiml.toString());
+});
+
+// ===========================
+// 🚀 START SERVER
+// ===========================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Webhook is running on port ${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
