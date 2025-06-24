@@ -17,7 +17,7 @@ async function getVisaInfo(country, visaType) {
 
   const sheets = google.sheets({ version: "v4", auth });
   const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: "YOUR_SPREADSHEET_ID", // <-- Replace with actual ID
+    spreadsheetId: "1OJp_uRS9U-MMygvRG_cY4TkiDalVVM8P_OBcRFRT548", // <-- Replace with actual ID
     range: "VisaData!A:D",
   });
   const rows = res.data.values;
