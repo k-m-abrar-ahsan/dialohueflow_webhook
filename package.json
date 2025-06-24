@@ -1,0 +1,39 @@
+{
+  "intents": [
+    {
+      "name": "Get Visa Cost",
+      "trainingPhrases": [
+        "What is the tourist visa price for Malaysia?",
+        "How much do you charge for a tourist visa for Thailand?",
+        "Give me the cost of a tourist visa for Indonesia.",
+        "What's the visa fee for Malaysia tourist?",
+        "How much does it cost for a tourist visa to Japan?"
+      ]
+    },
+    {
+      "name": "Get Visa Requirements",
+      "trainingPhrases": [
+        "What are the requirements for a tourist visa for Malaysia?",
+        "Which documents are required for a tourist visa in Thailand?",
+        "What do I need for a tourist visa to Indonesia?",
+        "List the requirements for a tourist visa for Japan.",
+        "What documents are needed for a tourist visa?"
+      ]
+    }
+  ],
+  "name": "dialogue_webhook",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "googleapis": "^150.0.1"
+  }
+}
